@@ -1,6 +1,6 @@
 import React from 'react'
 // import { PiRectangleThin } from "react-icons/pi";
-const shapesArr = [{id:1, shape:'Rectangle'},{id:2, shape:'Line'},{id:3, shape:'Arrow'},{id:4, shape:'Ellipse'},{id:5, shape:'Polygon'},{id:6, shape:'Star'}];
+const shapesArr = [{id:1, shape:'Rectangle'},{id:2, shape:'Line'},{id:3, shape:'Triangle'},{id:4, shape:'Ellipse'},{id:5, shape:'Polygon'},{id:6, shape:'Star'}];
 
 
 const ShapesDropDown = ({handleSelectShape}) => {
