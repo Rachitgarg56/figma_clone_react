@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import './ShapesDropDown.css'
 import shapesArr from '../../utils/shapes'
-import { FigmaContext } from '../../App';
+import { FigmaContext } from '../../Room';
 
 
 const ShapesDropDown = ({addShape}) => {

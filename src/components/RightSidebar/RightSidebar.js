@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react'
 import ChooseFont from './ChooseFont'
 import ChooseFontWeight from './ChooseFontWeight'
 import WidthHeightInputs from './WidthHeightInputs'
-import { FigmaContext } from '../../App'
+import { FigmaContext } from '../../Room'
 
 const RightSidebar = () => {
 

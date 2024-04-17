@@ -9,7 +9,7 @@ import commentsIcon from '../../assets/comments.svg';
 import ShapesDropDown from '../ShapesDropDown/ShapesDropDown';
 import { PiTextTThin } from "react-icons/pi";
 import { fabric } from 'fabric';
-import { FigmaContext } from '../../App';
+import { FigmaContext } from '../../Room';
 
 const Navbar = ({canvasRef}) => {
 
