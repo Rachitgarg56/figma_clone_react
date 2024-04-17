@@ -1,9 +1,35 @@
-import React from 'react'
-// import { PiRectangleThin } from "react-icons/pi";
-const shapesArr = [{id:1, shape:'Rectangle'},{id:2, shape:'Line'},{id:3, shape:'Triangle'},{id:4, shape:'Ellipse'},{id:5, shape:'Polygon'},{id:6, shape:'Star'}];
+import React, { useContext, useState } from 'react'
+import './ShapesDropDown.css'
+import shapesArr from '../../utils/shapes'
+import { FigmaContext } from '../../App';
 
 
-const ShapesDropDown = ({handleSelectShape}) => {
+const ShapesDropDown = ({addShape}) => {
+
+  const {layersArr, setLayersArr} = useContext(FigmaContext);
+  const [shapeCount, setShapeCount] = useState(0);
+
+  const getIcon = (shape) => {
+    const arr = shapesArr.filter((shapeObj) => {
+      return shapeObj.shape === shape
+    })
+    return arr[0].icon;
+  }
+
+  const addLayer = (shape) => {
+    const newLayersArr = [...layersArr];
+    for (let idx = 0; idx < newLayersArr.length; idx++) {
+      const obj = newLayersArr[idx]
+      if (obj.layer === shape) {
+        obj.count += 1;
+        setLayersArr(newLayersArr)
+        return;
+      }
+    }
+    const icon = getIcon(shape)
+    setLayersArr([...layersArr, { layer: shape, count: 1, icon: icon, id: layersArr.length+1 }])
+  }
+
   return (
     <div className='absolute bg-white top-0 p-4 z-50'>
 
@@ -12,7 +38,11 @@ const ShapesDropDown = ({handleSelectShape}) => {
         {
             shapesArr.map((shape) => {
                 return (
-                    <li key={shape.id} onClick={()=>handleSelectShape(shape.shape)}>
+                    <li key={shape.id} className='flex items-center gap-4' onClick={()=>{
+                      addShape(shape.shape)
+                      addLayer(shape.shape)
+                    }}>
+                        {shape.icon}
                         <p>{shape.shape}</p>
                     </li>            
                 )

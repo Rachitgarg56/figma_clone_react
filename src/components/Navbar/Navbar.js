@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import logo from '../../assets/logo.svg'
 import selectIcon from '../../assets/select.svg';
 import shapeElementsIcon from '../../assets/rectangle.svg';
@@ -7,19 +7,50 @@ import deleteIcon from '../../assets/delete.svg';
 import resetIcon from '../../assets/reset.svg';
 import commentsIcon from '../../assets/comments.svg';
 import ShapesDropDown from '../ShapesDropDown/ShapesDropDown';
+import { PiTextTThin } from "react-icons/pi";
 import { fabric } from 'fabric';
+import { FigmaContext } from '../../App';
 
 const Navbar = ({canvasRef}) => {
 
-  const [isDropDown, setIsDropDown] = useState(false);
-  const [selectedShape, setSelectedShape] = useState('Rectangle');
+  const { setSelectedTextObj, setWidth, setHeight, layersArr, setLayersArr } = useContext(FigmaContext);
 
-  const handleSelectShape = (shape) => {
-    setSelectedShape(shape);
-  }
+  const [selectedObj, setSelectedObj] = useState(null);
+  
+  const [canvas,setCanvas] = useState(null);
+  const [isDropDown, setIsDropDown] = useState(false);
 
   const handleDropdownClick = () => {
     setIsDropDown(!isDropDown);
+  }
+
+  const addShape = (shape) => {
+    let createdShape;
+    switch (shape) {
+      case 'Rectangle':
+        createdShape = createRectangle();
+        break;
+      case 'Line':
+        createdShape = createLine();
+        break;
+      case 'Triangle':
+        createdShape = createTriangle();
+        break;
+      case 'Ellipse':
+        createdShape = createEllipse();
+        break;
+      case 'Polygon':
+        createdShape = createPolygon();
+        break;
+      case 'Star':
+        createdShape = createStar();
+        break;
+      default:
+        return;
+    }
+
+    canvas.add(createdShape);
+
   }
 
   const createRectangle = () => {
@@ -74,8 +105,6 @@ const Navbar = ({canvasRef}) => {
       { x: 225, y: 300 },
     ], {
       fill: 'gray',
-      stroke: 'black',
-      strokeWidth: 2,
     });
 
     return polygon
@@ -99,48 +128,70 @@ const Navbar = ({canvasRef}) => {
     return star
   }
 
+  const addText = () => {
+    var text = new fabric.Text('hello world', { left: 100, top: 100, fontFamily:'serif', fontSize:20, fill:'white', editable: true });
+    canvas.add(text);
+  }
+
+  const addTextLayer = () => {
+    const newLayersArr = [...layersArr];
+    for (let idx = 0; idx < newLayersArr.length; idx++) {
+      const obj = newLayersArr[idx]
+      if (obj.layer === 'Text') {
+        obj.count += 1;
+        setLayersArr(newLayersArr)
+        return;
+      }
+    }
+    setLayersArr([...layersArr, { layer: 'Text', count: 1, icon: <PiTextTThin/>, id: layersArr.length+1 } ])
+  }
+
+  const deleteHandler = () => {
+    canvas.remove(selectedObj)
+  }
+
+  const removeLayer = () => {
+    const layerName = (selectedObj.type);
+    const newLayersArr = layersArr.map((layer) => {
+      if (layer.layer.toLowerCase() === layerName) {
+        layer.count -= 1;
+      }
+      return layer;
+    }).filter((layer) => layer.count > 0)
+
+    setLayersArr(newLayersArr);
+  }
+
   useEffect(() => {
-    const canvas = new fabric.Canvas(canvasRef.current, {
+    const newCanvas = new fabric.Canvas(canvasRef.current, {
       width: 500,
       height: 500,
     });
 
-    let createdShape;
+    setCanvas(newCanvas)
 
-    switch (selectedShape) {
-      case 'Rectangle':
-        createdShape = createRectangle();
-        break;
-      case 'Line':
-        createdShape = createLine();
-        break;
-      case 'Triangle':
-        createdShape = createTriangle();
-        break;
-      case 'Ellipse':
-        createdShape = createEllipse();
-        break;
-      case 'Polygon':
-        createdShape = createPolygon();
-        break;
-      case 'Star':
-        createdShape = createStar();
-        break;
-      default:
-        return () => {
-          canvas.dispose();
-        };
-    }
+    newCanvas.on('mouse:down', (e)=> {
 
-    canvas.add(createdShape);
+      if (e.target) {
+        setSelectedObj(e.target);
+      } else {
+        setSelectedObj(null)
+      }
 
-    // // Optionally, you can add more shapes or configure the canvas here
+      if (e.target && e.target.type === 'text') {
+        setSelectedTextObj(e.target);
+      } else {
+        setSelectedTextObj(null);
+        setWidth(0)
+        setHeight(0)  
+      }
+    })
 
     return () => {
-      // Clean up Fabric.js resources if needed
-      canvas.dispose();
-    };
-  }, [selectedShape]);
+      newCanvas.dispose();
+    }
+
+  }, []);
 
   
   return (
@@ -153,12 +204,20 @@ const Navbar = ({canvasRef}) => {
         
         <li className='w-6 h-6 flex items-center gap-1'>
           <img alt='' className='w-full h-full cursor-pointer' src={shapeElementsIcon} />
-          <i onClick={handleDropdownClick} style={{color:'#C4D3ED', fontSize:'10px'}} className="fa-solid fa-chevron-down cursor-pointer relative">{isDropDown && <ShapesDropDown handleSelectShape={handleSelectShape}/>}</i>
+          <i onClick={handleDropdownClick} style={{color:'#C4D3ED', fontSize:'10px'}} className="fa-solid fa-chevron-down cursor-pointer relative">{isDropDown && <ShapesDropDown addShape={addShape}/>}</i>
         </li>
         
-        <li className='w-6 h-6' ><img alt='' className='w-full h-full cursor-pointer' src={textIcon} /></li>
-        <li className='w-6 h-6' ><img alt='' className='w-full h-full cursor-pointer' src={deleteIcon} /></li>
-        <li className='w-6 h-6' ><img alt='' className='w-full h-full cursor-pointer' src={resetIcon} /></li>
+        <li className='w-6 h-6' onClick={()=>{
+          addText()
+          addTextLayer()
+        }} ><img alt='' className='w-full h-full cursor-pointer' src={textIcon} /></li>
+
+        <li className='w-6 h-6' onClick={()=>{
+          deleteHandler()
+          removeLayer()
+        }} ><img alt='' className='w-full h-full cursor-pointer' src={deleteIcon} /></li>
+
+        <li className='w-6 h-6' onClick={()=>window.location.reload()} ><img alt='' className='w-full h-full cursor-pointer' src={resetIcon} /></li>
         <li className='w-6 h-6' ><img alt='' className='w-full h-full cursor-pointer' src={commentsIcon} /></li>
 
       </ul>
@@ -169,3 +228,7 @@ const Navbar = ({canvasRef}) => {
 }
 
 export default Navbar
+
+
+
+
