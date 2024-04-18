@@ -13,6 +13,7 @@ import { FigmaContext } from '../../Room';
 import { useOthers, useSelf } from '../../liveblocks.config';
 import { Avatar } from '../Avatar/Avatar';
 import styles from './index.module.css';
+import randomName from '../../utils/randomName';
 
 const Navbar = ({canvasRef}) => {
 
@@ -202,7 +203,7 @@ const Navbar = ({canvasRef}) => {
 
   
   return (
-    <nav className='flex items-center justify-between px-4 py-2' style={{border:'1px solid white'}}>
+    <nav className='flex items-center justify-between px-4 py-4' style={{backgroundColor:'#141720'}}>
       <img src={logo} alt="FigPro Logo" width={58} height={20} />
 
       <ul className='flex flex-row items-center gap-8'>
@@ -244,7 +245,7 @@ const Navbar = ({canvasRef}) => {
         {currentUser && (
           <div className="relative ml-8 first:ml-0">
             {/* <Avatar src={currentUser.info.avatar} name="You" /> */}
-            <Avatar name="You" />
+            <Avatar name={randomName()} />
           </div>
         )}
       </div>
