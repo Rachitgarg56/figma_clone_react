@@ -10,8 +10,15 @@ import ShapesDropDown from '../ShapesDropDown/ShapesDropDown';
 import { PiTextTThin } from "react-icons/pi";
 import { fabric } from 'fabric';
 import { FigmaContext } from '../../Room';
+import { useOthers, useSelf } from '../../liveblocks.config';
+import { Avatar } from '../Avatar/Avatar';
+import styles from './index.module.css';
 
 const Navbar = ({canvasRef}) => {
+
+  const users = useOthers();
+  const currentUser = useSelf();
+  const hasMoreUsers = users.length > 3;
 
   const { setSelectedTextObj, setWidth, setHeight, layersArr, setLayersArr } = useContext(FigmaContext);
 
@@ -222,7 +229,26 @@ const Navbar = ({canvasRef}) => {
 
       </ul>
 
-      <div className='avatar rounded-full h-7 w-7 bg-white'></div>
+
+      {/* live-avatars-stack */}
+      <div className="flex pl-3">
+        {users.slice(0, 3).map(({ connectionId, info }) => {
+          return (
+            // <Avatar key={connectionId} src={info.avatar} name={info.name} />
+            <Avatar key={connectionId}  />
+          );
+        })}
+
+        {hasMoreUsers && <div className={styles.more}>+{users.length - 3}</div>}
+
+        {currentUser && (
+          <div className="relative ml-8 first:ml-0">
+            {/* <Avatar src={currentUser.info.avatar} name="You" /> */}
+            <Avatar name="You" />
+          </div>
+        )}
+      </div>
+
     </nav>
   )
 }

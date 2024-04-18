@@ -6,6 +6,8 @@ import { useBroadcastEvent, useEventListener, useMyPresence, useOthers } from '.
 import Cursor from './components/Cursor';
 import useInterval from './utils/hooks/useInterval'
 import { useCallback } from 'react';
+import FlyingReaction from './components/FlyingReaction'
+import ReactionSelector from './components/ReactionSelector'
 
 export const FigmaContext = createContext()
 
@@ -124,21 +126,123 @@ function Room() {
     <FigmaContext.Provider value={{layersArr,setLayersArr,selectedTextObj,setSelectedTextObj,selectedFont,setSelectedFont,width,setWidth,height,setHeight}}>
       <main className="h-screen overflow-hidden w-full"
         onPointerMove={(event) => {
-          // Update the user cursor position on every pointer move
+          event.preventDefault();
+          if (cursor == null || state.mode !== CursorMode.ReactionSelector) {
+            updateMyPresence({
+              cursor: {
+                x: Math.round(event.clientX),
+                y: Math.round(event.clientY),
+              },
+            });
+          }
+        }}
+        onPointerLeave={() => {
+          setState({
+            mode: CursorMode.Hidden,
+          });
+          updateMyPresence({
+            cursor: null,
+          });
+        }}
+        onPointerDown={(event) => {
           updateMyPresence({
             cursor: {
               x: Math.round(event.clientX),
               y: Math.round(event.clientY),
             },
           });
+          setState((state) =>
+            state.mode === CursorMode.Reaction
+              ? { ...state, isPressed: true }
+              : state
+          );
         }}
-        onPointerLeave={() =>
-          // When the pointer goes out, set cursor to null
-          updateMyPresence({
-            cursor: null,
-          })
-        }
+        onPointerUp={() => {
+          setState((state) =>
+            state.mode === CursorMode.Reaction
+              ? { ...state, isPressed: false }
+              : state
+          );
+        }}
       >
+
+        {reactions.map((reaction) => {
+                  return (
+                    <FlyingReaction
+                      key={reaction.timestamp.toString()}
+                      x={reaction.point.x}
+                      y={reaction.point.y}
+                      timestamp={reaction.timestamp}
+                      value={reaction.value}
+            />
+          );
+        })}
+        {cursor && (
+          <div
+            className="absolute top-0 left-0"
+            style={{
+              transform: `translateX(${cursor.x}px) translateY(${cursor.y}px)`,
+            }}
+          >
+            {state.mode === CursorMode.Chat && (
+              <>
+                <img alt='' src="cursor.svg" />
+
+                <div
+                  className="absolute top-5 left-2 bg-blue-500 px-4 py-2 text-sm leading-relaxed text-white"
+                  onKeyUp={(e) => e.stopPropagation()}
+                  style={{
+                    borderRadius: 20,
+                  }}
+                >
+                  {state.previousMessage && <div>{state.previousMessage}</div>}
+                  <input
+                    className="w-60 border-none	bg-transparent text-white placeholder-blue-300 outline-none"
+                    autoFocus={true}
+                    onChange={(e) => {
+                      updateMyPresence({ message: e.target.value });
+                      setState({
+                        mode: CursorMode.Chat,
+                        previousMessage: null,
+                        message: e.target.value,
+                      });
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        setState({
+                          mode: CursorMode.Chat,
+                          previousMessage: state.message,
+                          message: "",
+                        });
+                      } else if (e.key === "Escape") {
+                        setState({
+                          mode: CursorMode.Hidden,
+                        });
+                      }
+                    }}
+                    placeholder={state.previousMessage ? "" : "Say something…"}
+                    value={state.message}
+                    maxLength={50}
+                  />
+                </div>
+              </>
+            )}
+            {state.mode === CursorMode.ReactionSelector && (
+              <ReactionSelector
+                setReaction={(reaction) => {
+                  setReaction(reaction);
+                }}
+              />
+            )}
+            {state.mode === CursorMode.Reaction && (
+              <div className="pointer-events-none absolute top-3.5 left-1 select-none">
+                {state.reaction}
+              </div>
+            )}
+          </div>
+        )}
+
+
         {/* ************************************************************************** */}
 
         {/* <div>
@@ -147,27 +251,21 @@ function Room() {
           : "Move your cursor to broadcast its position to other people in the room."}
       </div> */}
 
-      {
-        /**
-         * Iterate over other users and display a cursor based on their presence
-         */
-        others.map(({ connectionId, presence }) => {
-          if (presence.cursor === null) {
-            return null;
-          }
+          {others.map(({ connectionId, presence }) => {
+              if (presence == null || !presence.cursor) {
+                return null;
+              }
 
-          return (
-            <Cursor
-              key={`cursor-${connectionId}`}
-              // connectionId is an integer that is incremented at every new connections
-              // Assigning a color with a modulo makes sure that a specific user has the same colors on every clients
-              color={COLORS[connectionId % COLORS.length]}
-              x={presence.cursor.x}
-              y={presence.cursor.y}
-            />
-          );
-        })
-      }
+              return (
+                <Cursor
+                  key={connectionId}
+                  color={COLORS[connectionId % COLORS.length]}
+                  x={presence.cursor.x}
+                  y={presence.cursor.y}
+                  message={presence.message}
+                />
+              );
+         })}   
 
       {/* ******************************************************************* */}
 
