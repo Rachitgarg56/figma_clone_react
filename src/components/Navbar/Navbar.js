@@ -161,7 +161,8 @@ const Navbar = ({canvasRef}) => {
   const removeLayer = () => {
     const layerName = (selectedObj.type);
     const newLayersArr = layersArr.map((layer) => {
-      if (layer.layer.toLowerCase() === layerName) {
+      // if (layer.layer.toLowerCase() === layerName) {
+      if (layer.layer.toLowerCase().startsWith(layerName)) {
         layer.count -= 1;
       }
       return layer;
@@ -208,24 +209,34 @@ const Navbar = ({canvasRef}) => {
 
       <ul className='flex flex-row items-center gap-8'>
 
+        {/* select element */}
         <li className='w-6 h-6' ><img alt='' className='w-full h-full cursor-pointer' src={selectIcon} /></li>
         
+        {/* dropdown shapes element */}
         <li className='w-6 h-6 flex items-center gap-1'>
           <img alt='' className='w-full h-full cursor-pointer' src={shapeElementsIcon} />
           <i onClick={handleDropdownClick} style={{color:'#C4D3ED', fontSize:'10px'}} className="fa-solid fa-chevron-down cursor-pointer relative">{isDropDown && <ShapesDropDown addShape={addShape}/>}</i>
         </li>
         
+
+        {/* text element */}
         <li className='w-6 h-6' onClick={()=>{
           addText()
           addTextLayer()
         }} ><img alt='' className='w-full h-full cursor-pointer' src={textIcon} /></li>
 
+
+        {/* delete element */}
         <li className='w-6 h-6' onClick={()=>{
           deleteHandler()
           removeLayer()
         }} ><img alt='' className='w-full h-full cursor-pointer' src={deleteIcon} /></li>
 
+        {/* reset element */}
         <li className='w-6 h-6' onClick={()=>window.location.reload()} ><img alt='' className='w-full h-full cursor-pointer' src={resetIcon} /></li>
+
+
+        {/* comments element */}
         <li className='w-6 h-6' ><img alt='' className='w-full h-full cursor-pointer' src={commentsIcon} /></li>
 
       </ul>

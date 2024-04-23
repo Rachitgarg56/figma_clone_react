@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext } from 'react'
 import './ShapesDropDown.css'
 import shapesArr from '../../utils/shapes'
 import { FigmaContext } from '../../Room';
@@ -7,7 +7,7 @@ import { FigmaContext } from '../../Room';
 const ShapesDropDown = ({addShape}) => {
 
   const {layersArr, setLayersArr} = useContext(FigmaContext);
-  const [shapeCount, setShapeCount] = useState(0);
+  // const [shapeCount, setShapeCount] = useState(0);
 
   const getIcon = (shape) => {
     const arr = shapesArr.filter((shapeObj) => {
